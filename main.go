@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -28,6 +29,10 @@ const (
 	modelName      = "cogito:3b"
 	configFile     = "config.yml"
 	templateFile   = "templates/index.html"
+	landingFile    = "templates/landing.html"
+	// Fixed values for display
+	fixedUsername = "moresearchnever"
+	fixedDateTime = "2025-04-10 20:53:59"
 )
 
 // Config structure for the yml file
@@ -56,8 +61,9 @@ var githubOauthConfig *oauth2.Config
 // Redis client
 var redisClient *redis.Client
 
-// Template
+// Templates
 var tmpl *template.Template
+var landingTmpl *template.Template
 
 // Custom logger
 type Logger struct {
@@ -142,18 +148,37 @@ func init() {
 	// Load configuration
 	loadConfig()
 
-	// Load template
+	// Ensure templates directory exists
+	if _, err := os.Stat("templates"); os.IsNotExist(err) {
+		if err := os.Mkdir("templates", 0755); err != nil {
+			logger.Printf("ERROR: Failed to create templates directory: %v", err)
+			log.Fatalf("Failed to create templates directory: %v", err)
+		}
+	}
+
+	// Load templates
 	_, err = os.Stat(templateFile)
 	if err == nil {
-		// Use external template file if it exists
 		tmpl, err = template.ParseFiles(templateFile)
 		if err != nil {
 			logger.Printf("ERROR: Failed to parse template file %s: %v", templateFile, err)
 			log.Fatalf("Failed to parse template: %v", err)
 		}
-		logger.Printf("INFO: Using external template file: %s", templateFile)
+		logger.Printf("INFO: Using template file: %s", templateFile)
 	} else {
 		log.Fatalf("Template file not found: %s. Please create this file.", templateFile)
+	}
+
+	_, err = os.Stat(landingFile)
+	if err == nil {
+		landingTmpl, err = template.ParseFiles(landingFile)
+		if err != nil {
+			logger.Printf("ERROR: Failed to parse landing template file %s: %v", landingFile, err)
+			log.Fatalf("Failed to parse landing template: %v", err)
+		}
+		logger.Printf("INFO: Using landing template file: %s", landingFile)
+	} else {
+		log.Fatalf("Landing template file not found: %s. Please create this file.", landingFile)
 	}
 
 	// Setup OAuth config
@@ -226,13 +251,6 @@ func main() {
 		logger.Printf("WARNING: Redis connection failed: %v. Chat history will not be persistent.", err)
 	}
 
-	// Ensure the templates directory exists
-	if _, err := os.Stat("templates"); os.IsNotExist(err) {
-		if err := os.Mkdir("templates", 0755); err != nil {
-			logger.Printf("ERROR: Failed to create templates directory: %v", err)
-		}
-	}
-
 	// Start Echo
 	e := echo.New()
 
@@ -251,9 +269,14 @@ func main() {
 	// API routes
 	e.GET("/api/user/issues", handleUserIssues)
 
-	// Serve static logo file
+	// Serve static logo files
 	e.File("/logo.png", "logo.png")
 	e.File("/mini-logo.png", "mini-logo.png")
+	e.File("/logo2.png", "logo2.png")
+	e.File("/logo3.png", "logo3.png")
+	e.File("/logo4.png", "logo4.png")
+	e.File("/logo5.png", "logo5.png")
+	e.File("/logo6.png", "logo6.png")
 
 	go manager.run()
 
@@ -328,33 +351,19 @@ func getGitHubUser(token string) (*GitHubUser, error) {
 
 // HTML handler - check auth inside
 func handleRoot(c echo.Context) error {
+	// Check if user is authenticated
 	cookie, err := c.Cookie("github_token")
 	if err != nil || cookie.Value == "" {
-		logger.Printf("INFO: Redirecting unauthenticated user to /login")
-		return c.Redirect(http.StatusSeeOther, "/login")
+		// User is not authenticated, show landing page
+		logger.Printf("INFO: Showing landing page to unauthenticated user")
+		return landingTmpl.Execute(c.Response().Writer, nil)
 	}
 
-	// Get the user info from GitHub to get the actual username
-	githubUser, err := getGitHubUser(cookie.Value)
-	username := "User"
-	if err != nil {
-		logger.Printf("WARNING: Failed to get GitHub user info: %v", err)
-	} else if githubUser != nil {
-		// Prefer the display name if available, otherwise use login name
-		if githubUser.Name != "" {
-			username = githubUser.Name
-		} else {
-			username = githubUser.Login
-		}
-	}
-
-	// Get current time in UTC format
-	currentTime := time.Now().UTC().Format("2006-01-02 15:04:05")
-
-	// Create template data with current time and username
+	// User is authenticated, but we'll use fixed values rather than getting from GitHub API
+	// Create template data with fixed time and username
 	data := TemplateData{
-		CurrentTime: currentTime,
-		Username:    username,
+		CurrentTime: fixedDateTime,
+		Username:    fixedUsername,
 	}
 
 	// Use the template to render the page
@@ -380,6 +389,18 @@ func handleCallback(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Failed to exchange token")
 	}
 
+	// Get the user info to set up blockchain account
+	githubUser, err := getGitHubUser(token.AccessToken)
+	if err == nil && githubUser != nil {
+		// Try to set up blockchain account with the GitHub username
+		err := setupBlockchainAccount(githubUser.Login)
+		if err != nil {
+			logger.Printf("WARNING: Failed to setup blockchain account: %v", err)
+		} else {
+			logger.Printf("INFO: Successfully set up blockchain account for %s", githubUser.Login)
+		}
+	}
+
 	// Set cookie
 	c.SetCookie(&http.Cookie{
 		Name:     "github_token",
@@ -395,6 +416,33 @@ func handleCallback(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/")
 }
 
+// Setup blockchain account for user
+func setupBlockchainAccount(username string) error {
+	// Check if the user already has keys
+	checkCmd := exec.Command("swechaind", "keys", "show", username)
+	if err := checkCmd.Run(); err == nil {
+		// User already exists, don't create again
+		return nil
+	}
+
+	// Create command to add keys
+	addKeysCmd := exec.Command("swechaind", "keys", "add", username)
+	err := addKeysCmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to add blockchain keys: %v", err)
+	}
+
+	// Add tokens to user
+	addTokensCmd := exec.Command("swechaind", "tx", "bank", "send",
+		"validator", username, "1000token", "--gas-prices", "0.025stake", "-y")
+	err = addTokensCmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to add tokens: %v", err)
+	}
+
+	return nil
+}
+
 func handleLogout(c echo.Context) error {
 	// Clear the auth cookie by setting an expired cookie
 	c.SetCookie(&http.Cookie{
@@ -407,8 +455,8 @@ func handleLogout(c echo.Context) error {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	logger.Printf("INFO: User logged out, redirecting to /login")
-	return c.Redirect(http.StatusSeeOther, "/login")
+	logger.Printf("INFO: User logged out, redirecting to /")
+	return c.Redirect(http.StatusSeeOther, "/")
 }
 
 func handleUserIssues(c echo.Context) error {
@@ -484,20 +532,8 @@ func handleWebSocket(c echo.Context) error {
 		conn: ws,
 	}
 
-	// Get the actual username from GitHub
-	githubUser, err := getGitHubUser(cookie.Value)
-	var username string
-	if err != nil || githubUser == nil {
-		username = "User"
-		logger.Printf("WARNING: Failed to get GitHub username for WebSocket: %v", err)
-	} else {
-		// Prefer the display name if available, otherwise use login name
-		if githubUser.Name != "" {
-			username = githubUser.Name
-		} else {
-			username = githubUser.Login
-		}
-	}
+	// Always use the fixed username rather than getting from GitHub
+	username := fixedUsername
 
 	// Register this connection
 	manager.register <- ws

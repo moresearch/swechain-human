@@ -5,26 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SWEChain</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Teko:wght@300&display=swap">
     <style>
-        @font-face {
-            font-family: 'Terminus';
-            src: url('https://cdn.jsdelivr.net/npm/@xz/fonts@1/serve/terminus.min.css');
-            font-weight: normal;
-            font-style: normal;
-        }
-        
-        @font-face {
-            font-family: 'Terminus';
-            src: url('https://cdn.jsdelivr.net/npm/@xz/fonts@1/serve/terminus-bold.min.css');
-            font-weight: bold;
-            font-style: normal;
-        }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Terminus', monospace;
+            font-family: 'Teko', sans-serif;
             letter-spacing: 0.02em;
         }
         
@@ -50,7 +37,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-weight: 400;
+            font-weight: 300;
             text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
         }
         
@@ -82,13 +69,14 @@
         }
         
         .logo {
-            height: 30px;
+            height: 15px; /* 50% smaller */
             filter: grayscale(100%);
         }
         
         .welcome-message {
-            font-size: 0.9rem;
+            font-size: 1.2rem;
             color: var(--text-secondary);
+            font-weight: 300;
         }
         
         .main-content {
@@ -149,26 +137,33 @@
         }
         
         .response-sender {
-            font-size: 0.9rem;
-            font-weight: bold;
+            font-size: 1.1rem;
+            font-weight: 300;
             color: var(--text-primary);
             display: flex;
             align-items: center;
+            flex: 1;
+            overflow: hidden;
         }
         
-        .response-sender img {
-            height: 18px;
-            margin-right: 8px;
-            filter: grayscale(100%);
+        .current-question {
+            margin-left: 8px;
+            font-style: italic;
+            color: var(--text-secondary);
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
         }
         
         .response-timestamp {
-            font-size: 0.85rem;
+            font-size: 1rem;
             color: var(--text-secondary);
+            margin-left: 8px;
+            white-space: nowrap;
         }
         
         .response-text {
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             line-height: 1.7;
             white-space: pre-wrap;
             word-break: break-word;
@@ -199,9 +194,9 @@
             border: 1px solid var(--border-color);
             background-color: var(--bg-color);
             color: var(--text-primary);
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             box-shadow: var(--shadow-subtle);
-            font-family: 'Terminus', monospace;
+            font-family: 'Teko', sans-serif;
             resize: none;
             min-height: 50px;
             max-height: 200px;
@@ -322,7 +317,7 @@
             z-index: 5;
             opacity: 0;
             animation: fade-in-out 5s forwards;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
         }
         
         @keyframes fade-in-out {
@@ -342,15 +337,15 @@
         }
         
         .empty-state h2 {
-            font-weight: bold;
+            font-weight: 300;
             margin-bottom: 15px;
-            font-size: 1rem;
+            font-size: 1.3rem;
             color: var(--text-primary);
         }
         
         .empty-state p {
-            font-weight: 400;
-            font-size: 0.9rem;
+            font-weight: 300;
+            font-size: 1.1rem;
         }
         
         /* Modal styles */
@@ -386,8 +381,8 @@
         }
         
         .modal-title {
-            font-size: 0.95rem;
-            font-weight: bold;
+            font-size: 1.2rem;
+            font-weight: 300;
             color: var(--text-primary);
             text-transform: uppercase;
         }
@@ -396,7 +391,7 @@
             background: none;
             border: 1px solid transparent;
             color: var(--text-secondary);
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             cursor: pointer;
             padding: 0;
             width: 30px;
@@ -482,7 +477,7 @@
         .history-meta {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             margin-bottom: 8px;
         }
@@ -513,8 +508,8 @@
         }
         
         .issue-title {
-            font-weight: bold;
-            font-size: 0.95rem;
+            font-weight: 300;
+            font-size: 1.2rem;
             margin-bottom: 6px;
             display: block;
         }
@@ -522,7 +517,7 @@
         .issue-meta {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             margin-bottom: 8px;
         }
@@ -535,14 +530,14 @@
         }
         
         .issue-label {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
             padding: 2px 8px;
             background-color: var(--bg-color);
             border: 1px solid var(--border-color);
         }
         
         .issue-body {
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             color: var(--text-primary);
             margin-top: 8px;
             overflow: hidden;
@@ -556,6 +551,30 @@
             text-align: center;
             padding: 20px;
             color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        /* Sponsors footer */
+        .sponsors-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .sponsor-logo {
+            height: 72px; /* 3x bigger */
+            filter: grayscale(100%);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .sponsor-logo:hover {
+            opacity: 1;
         }
     </style>
 </head>
@@ -563,10 +582,10 @@
     <div class="app-container">
         <div class="header">
             <div class="logo-container">
-                <img src="/logo.png" alt="Logo" class="logo">
+                <img src="/mini-logo.png" alt="Logo" class="logo">
             </div>
             <div class="welcome-message">
-                Welcome, {{.Username}}
+                Welcome, moresearchnever
             </div>
         </div>
         
@@ -612,6 +631,16 @@
                     </button>
                 </div>
             </form>
+        </div>
+        
+        <!-- Sponsors footer with 6 logos -->
+        <div class="sponsors-footer">
+            <img src="/logo.png" alt="Sponsor 1" class="sponsor-logo">
+            <img src="/logo2.png" alt="Sponsor 2" class="sponsor-logo">
+            <img src="/logo3.png" alt="Sponsor 3" class="sponsor-logo">
+            <img src="/logo4.png" alt="Sponsor 4" class="sponsor-logo">
+            <img src="/logo5.png" alt="Sponsor 5" class="sponsor-logo">
+            <img src="/logo6.png" alt="Sponsor 6" class="sponsor-logo">
         </div>
         
         <!-- Issues Modal -->
@@ -672,6 +701,9 @@
         
         // Store issues data
         let userIssues = [];
+        
+        // Store current question
+        let currentQuestion = '';
         
         // Auto-resize textarea as content grows
         messageInput.addEventListener('input', function() {
@@ -963,17 +995,25 @@
                     if (data.history.length === 0) {
                         showEmptyState();
                     } else {
-                        // Find the last AI response
+                        // Find the last AI response and corresponding question
                         let lastResponse = null;
+                        let lastQuestion = null;
+                        
                         for (let i = data.history.length - 1; i >= 0; i--) {
                             if (data.history[i].sender === 'Ollama') {
                                 lastResponse = data.history[i];
+                                // Look for the preceding question
+                                if (i > 0 && data.history[i-1].sender === 'You') {
+                                    lastQuestion = data.history[i-1];
+                                }
                                 break;
                             }
                         }
                         
                         if (lastResponse) {
-                            showResponse(lastResponse.text, new Date(lastResponse.timestamp));
+                            // Set current question
+                            currentQuestion = lastQuestion ? lastQuestion.text : '';
+                            showResponse(lastResponse.text, new Date(lastResponse.timestamp), currentQuestion);
                         } else {
                             showEmptyState();
                         }
@@ -988,7 +1028,7 @@
                     if (data.start) {
                         // Start a new response
                         mainContent.innerHTML = ''; // Clear previous content
-                        currentResponseElement = startStreamingResponse(new Date());
+                        currentResponseElement = startStreamingResponse(new Date(), currentQuestion);
                     } else if (currentResponseElement) {
                         // Update existing response
                         currentResponseElement.textContent += data.text || '';
@@ -1009,6 +1049,11 @@
                         timestamp: data.timestamp
                     };
                     conversationHistory.push(message);
+                    
+                    // Save the current question when user sends a message
+                    if (data.sender === 'You') {
+                        currentQuestion = data.text;
+                    }
                 }
                 
                 // For user messages, just show the typing indicator
@@ -1046,71 +1091,88 @@
             typingIndicator.classList.remove('show');
         }
         
-    // Show a response from the AI
-    function showResponse(text, timestamp) {
-        const responseContainer = document.createElement('div');
-        responseContainer.className = 'response-container';
+        // Show a response from the AI
+        function showResponse(text, timestamp, question) {
+            const responseContainer = document.createElement('div');
+            responseContainer.className = 'response-container';
+            
+            const responseHeader = document.createElement('div');
+            responseHeader.className = 'response-header';
+            
+            const responseSender = document.createElement('div');
+            responseSender.className = 'response-sender';
+            
+            // Display the question instead of an image
+            if (question) {
+                const questionText = document.createElement('span');
+                questionText.className = 'current-question';
+                questionText.textContent = truncateText(question, 50);
+                questionText.title = question; // Show full question on hover
+                responseSender.appendChild(questionText);
+            }
+            
+            responseHeader.appendChild(responseSender);
+            
+            const responseTimestamp = document.createElement('div');
+            responseTimestamp.className = 'response-timestamp';
+            responseTimestamp.textContent = formatTime(timestamp);
+            responseHeader.appendChild(responseTimestamp);
+            
+            const responseText = document.createElement('div');
+            responseText.className = 'response-text';
+            responseText.textContent = text;
+            
+            responseContainer.appendChild(responseHeader);
+            responseContainer.appendChild(responseText);
+            
+            mainContent.appendChild(responseContainer);
+        }
         
-        const responseHeader = document.createElement('div');
-        responseHeader.className = 'response-header';
+        // Start a streaming response
+        function startStreamingResponse(timestamp, question) {
+            const responseContainer = document.createElement('div');
+            responseContainer.className = 'response-container streaming';
+            
+            const responseHeader = document.createElement('div');
+            responseHeader.className = 'response-header';
+            
+            const responseSender = document.createElement('div');
+            responseSender.className = 'response-sender';
+            
+            // Display the question instead of an image
+            if (question) {
+                const questionText = document.createElement('span');
+                questionText.className = 'current-question';
+                questionText.textContent = truncateText(question, 50);
+                questionText.title = question; // Show full question on hover
+                responseSender.appendChild(questionText);
+            }
+            
+            responseHeader.appendChild(responseSender);
+            
+            const responseTimestamp = document.createElement('div');
+            responseTimestamp.className = 'response-timestamp';
+            responseTimestamp.textContent = formatTime(timestamp);
+            responseHeader.appendChild(responseTimestamp);
+            
+            const responseText = document.createElement('div');
+            responseText.className = 'response-text';
+            responseText.textContent = '';
+            
+            responseContainer.appendChild(responseHeader);
+            responseContainer.appendChild(responseText);
+            
+            mainContent.appendChild(responseContainer);
+            
+            return responseText;
+        }
         
-        const responseSender = document.createElement('div');
-        responseSender.className = 'response-sender';
-        // Use mini-logo image instead of regular logo
-        const logoImg = document.createElement('img');
-        logoImg.src = '/mini-logo.png';
-        logoImg.alt = 'Logo';
-        responseSender.appendChild(logoImg);
-        responseHeader.appendChild(responseSender);
+        // Truncate text if it's too long
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
         
-        const responseTimestamp = document.createElement('div');
-        responseTimestamp.className = 'response-timestamp';
-        responseTimestamp.textContent = formatTime(timestamp);
-        responseHeader.appendChild(responseTimestamp);
-        
-        const responseText = document.createElement('div');
-        responseText.className = 'response-text';
-        responseText.textContent = text;
-        
-        responseContainer.appendChild(responseHeader);
-        responseContainer.appendChild(responseText);
-        
-        mainContent.appendChild(responseContainer);
-    }
-    
-    // Start a streaming response
-    function startStreamingResponse(timestamp) {
-        const responseContainer = document.createElement('div');
-        responseContainer.className = 'response-container streaming';
-        
-        const responseHeader = document.createElement('div');
-        responseHeader.className = 'response-header';
-        
-        const responseSender = document.createElement('div');
-        responseSender.className = 'response-sender';
-        // Use mini-logo image instead of regular logo
-        const logoImg = document.createElement('img');
-        logoImg.src = '/mini-logo.png';
-        logoImg.alt = 'Logo';
-        responseSender.appendChild(logoImg);
-        responseHeader.appendChild(responseSender);
-        
-        const responseTimestamp = document.createElement('div');
-        responseTimestamp.className = 'response-timestamp';
-        responseTimestamp.textContent = formatTime(timestamp);
-        responseHeader.appendChild(responseTimestamp);
-        
-        const responseText = document.createElement('div');
-        responseText.className = 'response-text';
-        responseText.textContent = '';
-        
-        responseContainer.appendChild(responseHeader);
-        responseContainer.appendChild(responseText);
-        
-        mainContent.appendChild(responseContainer);
-        
-        return responseText;
-    }        
         // Finish the streaming response
         function finishStreamingResponse() {
             const streamingElement = document.querySelector('.streaming');

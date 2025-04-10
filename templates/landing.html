@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWEChain - Welcome</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Teko:wght@300&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Teko', sans-serif;
+            letter-spacing: 0.02em;
+        }
+        
+        :root {
+            --bg-color: #ffffff;
+            --bg-secondary: #f8f8f8;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border-color: #e0e0e0;
+            --shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.08);
+            --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 300;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        
+        .landing-container {
+            width: 90%;
+            max-width: 900px;
+            background-color: var(--bg-color);
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .landing-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            height: 60px;
+            filter: grayscale(100%);
+            margin-bottom: 20px;
+        }
+        
+        .landing-content {
+            padding: 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        
+        .tagline {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: var(--text-secondary);
+        }
+        
+        .features {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        
+        .feature {
+            flex: 0 0 30%;
+            margin: 15px;
+            padding: 20px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .feature h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .feature p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+        
+        .cta-button {
+            background-color: var(--text-primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-weight: 300;
+            display: inline-block;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        
+        .cta-button:hover {
+            background-color: var(--text-secondary);
+        }
+        
+        /* Sponsors footer */
+        .sponsors-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            gap: 40px;
+        }
+        
+        .sponsor-logo {
+            height: 72px; /* 3x bigger */
+            filter: grayscale(100%);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .sponsor-logo:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <div class="landing-header">
+            <img src="/mini-logo.png" alt="SWEChain" class="logo">
+        </div>
+        
+        <div class="landing-content">
+            <p class="tagline">SWEChain is a local blockchain for SWE-Agents economic experimentations</p>
+           <!-- 
+            <div class="features">
+                <div class="feature">
+                    <h3>GitHub Integration</h3>
+                    <p>Seamlessly connect with your GitHub issues and repositories</p>
+                </div>
+                <div class="feature">
+                    <h3>AI-powered Answers</h3>
+                    <p>Get intelligent responses to your development questions</p>
+                </div>
+                <div class="feature">
+                    <h3>Blockchain Tokens</h3>
+                    <p>Earn tokens for asking quality questions and contributing</p>
+                </div>
+            </div>
+            
+        </div>
+           -->
+        
+           <div class="features">
+               <a href="/login" class="cta-button">Sign in with GitHub</a>
+           </div>
+
+        <!-- Sponsors footer -->
+        <div class="sponsors-footer">
+            <img src="/logo.png" alt="Sponsor 1" class="sponsor-logo">
+            <img src="/logo2.png" alt="Sponsor 2" class="sponsor-logo">
+            <img src="/logo3.png" alt="Sponsor 3" class="sponsor-logo">
+            <img src="/logo4.png" alt="Sponsor 4" class="sponsor-logo">
+        </div>
+    </div>
+</body>
+</html>
