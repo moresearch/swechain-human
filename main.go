@@ -270,13 +270,13 @@ func main() {
 	e.GET("/api/user/issues", handleUserIssues)
 
 	// Serve static logo files
-	e.File("/logo.png", "logo.png")
-	e.File("/mini-logo.png", "mini-logo.png")
-	e.File("/logo2.png", "logo2.png")
-	e.File("/logo3.png", "logo3.png")
-	e.File("/logo4.png", "logo4.png")
-	e.File("/logo5.png", "logo5.png")
-	e.File("/logo6.png", "logo6.png")
+	e.File("/logo.png", "img/logo.png")
+	e.File("/mini-logo.png", "img/mini-logo.png")
+	e.File("/logo2.png", "img/logo2.png")
+	e.File("/logo3.png", "img/logo3.png")
+	e.File("/logo4.png", "img/logo4.png")
+	e.File("/logo5.png", "img/logo5.png")
+	e.File("/logo6.png", "img/logo6.png")
 
 	go manager.run()
 
