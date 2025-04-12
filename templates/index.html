@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SWEChain</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Teko:wght@300&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xz/fonts@1/serve/bitstream-vera-sans-mono.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Teko', sans-serif;
+            font-family: 'Bitstream Vera Sans Mono', monospace;
             letter-spacing: 0.02em;
         }
         
@@ -27,6 +27,7 @@
             --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.04);
             --scrollbar-bg: #f0f0f0;
             --scrollbar-thumb: #c0c0c0;
+            --accent-color: #58a6ff;
         }
         
         body {
@@ -37,7 +38,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-weight: 300;
+            font-weight: normal;
             text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
         }
         
@@ -73,10 +74,25 @@
             filter: grayscale(100%);
         }
         
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
         .welcome-message {
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             color: var(--text-secondary);
-            font-weight: 300;
+        }
+        
+        .blockchain-info {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+        
+        .token-value {
+            color: var(--accent-color);
+            font-weight: bold;
         }
         
         .main-content {
@@ -137,8 +153,7 @@
         }
         
         .response-sender {
-            font-size: 1.1rem;
-            font-weight: 200;
+            font-size: 0.9rem;
             color: var(--text-primary);
             display: flex;
             align-items: center;
@@ -148,7 +163,7 @@
         
         .current-question {
             margin-left: 8px;
-            font-style: normal;
+            font-style: italic;
             color: var(--text-secondary);
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -156,14 +171,14 @@
         }
         
         .response-timestamp {
-            font-size: 1rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             margin-left: 8px;
             white-space: nowrap;
         }
         
         .response-text {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             line-height: 1.7;
             white-space: pre-wrap;
             word-break: break-word;
@@ -194,9 +209,9 @@
             border: 1px solid var(--border-color);
             background-color: var(--bg-color);
             color: var(--text-primary);
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             box-shadow: var(--shadow-subtle);
-            font-family: 'Teko', sans-serif;
+            font-family: 'Bitstream Vera Sans Mono', monospace;
             resize: none;
             min-height: 50px;
             max-height: 200px;
@@ -305,7 +320,7 @@
         
         .system-message {
             position: absolute;
-            top: 50%;
+            top: 30%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
@@ -317,7 +332,7 @@
             z-index: 5;
             opacity: 0;
             animation: fade-in-out 5s forwards;
-            font-size: 1.5rem;
+            font-size: 0.9rem;
         }
         
         @keyframes fade-in-out {
@@ -337,15 +352,13 @@
         }
         
         .empty-state h2 {
-            font-weight: 300;
             margin-bottom: 15px;
-            font-size: 1.3rem;
+            font-size: 1rem;
             color: var(--text-primary);
         }
         
         .empty-state p {
-            font-weight: 300;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
         }
         
         /* Modal styles */
@@ -381,10 +394,8 @@
         }
         
         .modal-title {
-            font-size: 1.2rem;
-            font-weight: 300;
+            font-size: 1rem;
             color: var(--text-primary);
-            text-transform: uppercase;
         }
         
         .modal-close {
@@ -477,7 +488,7 @@
         .history-meta {
             display: flex;
             justify-content: space-between;
-            font-size: 1rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             margin-bottom: 8px;
         }
@@ -508,8 +519,7 @@
         }
         
         .issue-title {
-            font-weight: 300;
-            font-size: 1.2rem;
+            font-size: 1rem;
             margin-bottom: 6px;
             display: block;
         }
@@ -517,7 +527,7 @@
         .issue-meta {
             display: flex;
             justify-content: space-between;
-            font-size: 1rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             margin-bottom: 8px;
         }
@@ -530,14 +540,14 @@
         }
         
         .issue-label {
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             padding: 2px 8px;
             background-color: var(--bg-color);
             border: 1px solid var(--border-color);
         }
         
         .issue-body {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             color: var(--text-primary);
             margin-top: 8px;
             overflow: hidden;
@@ -551,7 +561,7 @@
             text-align: center;
             padding: 20px;
             color: var(--text-secondary);
-            font-size: 1.1rem;
+            font-size: 0.9rem;
         }
         
         /* Sponsors footer */
@@ -582,10 +592,15 @@
     <div class="app-container">
         <div class="header">
             <div class="logo-container">
-                <img src="mini-logo.png" alt="Logo" class="logo">
+                <img src="/img/mini-logo.png" alt="Logo" class="logo">
             </div>
-            <div class="welcome-message">
-                Welcome! 
+            <div class="user-info">
+                <div class="welcome-message">
+                    Welcome, {{.Username}}
+                </div>
+                <div class="blockchain-info">
+                    Account: {{.AccountAddress}} Tokens: <span id="token-balance" class="token-value">{{.TokenBalance}}</span>
+                </div>
             </div>
         </div>
         
@@ -635,12 +650,12 @@
         
         <!-- Sponsors footer with 6 logos -->
         <div class="sponsors-footer">
-            <img src="/logo.png" alt="Sponsor 1" class="sponsor-logo">
-            <img src="/logo2.png" alt="Sponsor 2" class="sponsor-logo">
-            <img src="/logo3.png" alt="Sponsor 3" class="sponsor-logo">
-            <img src="/logo4.png" alt="Sponsor 4" class="sponsor-logo">
-            <img src="/logo5.png" alt="Sponsor 5" class="sponsor-logo">
-            <img src="/logo6.png" alt="Sponsor 6" class="sponsor-logo">
+            <img src="/img/logo.png" alt="Sponsor 1" class="sponsor-logo">
+            <img src="/img/logo2.png" alt="Sponsor 2" class="sponsor-logo">
+            <img src="/img/logo3.png" alt="Sponsor 3" class="sponsor-logo">
+            <img src="/img/logo4.png" alt="Sponsor 4" class="sponsor-logo">
+            <img src="/img/logo5.png" alt="Sponsor 5" class="sponsor-logo">
+            <img src="/img/logo6.png" alt="Sponsor 6" class="sponsor-logo">
         </div>
         
         <!-- Issues Modal -->
@@ -680,6 +695,7 @@
         const historyOverlay = document.getElementById('history-overlay');
         const historyModalClose = document.getElementById('history-modal-close');
         const historyContent = document.getElementById('history-content');
+        const tokenBalanceElement = document.getElementById('token-balance');
         
         // GitHub Issues elements
         const issuesButtonIcon = document.getElementById('issues-button-icon');
@@ -704,6 +720,9 @@
         
         // Store current question
         let currentQuestion = '';
+        
+        // Connect to token update WebSocket
+        connectTokenUpdates();
         
         // Auto-resize textarea as content grows
         messageInput.addEventListener('input', function() {
@@ -774,6 +793,52 @@
         function closeIssuesModal() {
             issuesModal.style.display = 'none';
             issuesOverlay.style.display = 'none';
+        }
+        
+        // Handle token updates via WebSocket
+        function connectTokenUpdates() {
+            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const tokenWs = new WebSocket(protocol + '//' + location.host + '/token-updates');
+            
+            tokenWs.onopen = function() {
+                console.log('Token update WebSocket connected');
+            };
+            
+            tokenWs.onclose = function() {
+                console.log('Token update WebSocket closed, reconnecting in 5 seconds...');
+                setTimeout(connectTokenUpdates, 5000);
+            };
+            
+            tokenWs.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.token_balance !== undefined) {
+                    const currentVal = parseInt(tokenBalanceElement.textContent);
+                    const newVal = data.token_balance;
+                    
+                    // Update the displayed value
+                    tokenBalanceElement.textContent = newVal;
+                    
+                    // Add animation based on whether value increased or decreased
+                    if (newVal > currentVal) {
+                        flashTokenValue('#4CAF50'); // Green for increase
+                    } else if (newVal < currentVal) {
+                        flashTokenValue('#FF5722'); // Orange for decrease
+                    }
+                }
+            };
+            
+            tokenWs.onerror = function(error) {
+                console.error('Token WebSocket error:', error);
+            };
+        }
+        
+        function flashTokenValue(color) {
+            tokenBalanceElement.style.transition = 'color 0s';
+            tokenBalanceElement.style.color = color;
+            setTimeout(() => {
+                tokenBalanceElement.style.transition = 'color 1s ease';
+                tokenBalanceElement.style.color = 'var(--accent-color)';
+            }, 50);
         }
         
         // Fetch GitHub issues authored by the user

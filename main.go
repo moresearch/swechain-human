@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -26,13 +27,10 @@ import (
 
 const (
 	ollamaEndpoint = "http://localhost:11434/api/generate"
-	modelName      = "llama3.2:3b"
+	modelName      = "cogito:3b"
 	configFile     = "config.yml"
 	templateFile   = "templates/index.html"
 	landingFile    = "templates/landing.html"
-	// Fixed values for display
-	fixedUsername = "moresearchnever"
-	fixedDateTime = "2025-04-10 20:53:59"
 )
 
 // Config structure for the yml file
@@ -113,8 +111,9 @@ type OllamaResponse struct {
 
 // Template data
 type TemplateData struct {
-	CurrentTime string
-	Username    string
+	Username       string
+	AccountAddress string
+	TokenBalance   int
 }
 
 // GitHub User structure
@@ -122,6 +121,11 @@ type GitHubUser struct {
 	Login     string `json:"login"`
 	Name      string `json:"name"`
 	AvatarURL string `json:"avatar_url"`
+}
+
+// Token update message
+type TokenUpdate struct {
+	TokenBalance int `json:"token_balance"`
 }
 
 // Connection wrapper to provide thread safety for WebSocket writes
@@ -265,18 +269,13 @@ func main() {
 	e.GET("/callback", handleCallback)
 	e.GET("/ws", handleWebSocket)
 	e.GET("/logout", handleLogout)
+	e.GET("/token-updates", handleTokenUpdates)
 
 	// API routes
 	e.GET("/api/user/issues", handleUserIssues)
 
-	// Serve static logo files
-	e.File("/logo.png", "img/logo.png")
-	e.File("/mini-logo.png", "img/mini-logo.png")
-	e.File("/logo2.png", "img/logo2.png")
-	e.File("/logo3.png", "img/logo3.png")
-	e.File("/logo4.png", "img/logo4.png")
-	e.File("/logo5.png", "img/logo5.png")
-	e.File("/logo6.png", "img/logo6.png")
+	// Serve static files from img directory
+	e.Static("/img", "img")
 
 	go manager.run()
 
@@ -349,6 +348,109 @@ func getGitHubUser(token string) (*GitHubUser, error) {
 	return &user, nil
 }
 
+// Setup blockchain account for user and return account address and token balance
+func setupBlockchainAccount(username string) (string, int, error) {
+	// Check if the user already has keys
+	accountAddress := ""
+
+	// Get user's account address
+	checkAddressCmd := exec.Command("swechaind", "keys", "show", username, "-a", "--keyring-backend", "test")
+	addressOutput, err := checkAddressCmd.Output()
+
+	if err == nil {
+		// User already exists, get their address
+		accountAddress = strings.TrimSpace(string(addressOutput))
+		logger.Printf("INFO: Found existing blockchain account for %s at %s", username, accountAddress)
+	} else {
+		// Create command to add keys
+		addKeysCmd := exec.Command("swechaind", "keys", "add", username, "--keyring-backend", "test")
+		keyOutput, err := addKeysCmd.Output()
+		if err != nil {
+			return "", 0, fmt.Errorf("failed to add blockchain keys: %v", err)
+		}
+
+		// Parse the output to get the address
+		outputLines := strings.Split(string(keyOutput), "\n")
+		for _, line := range outputLines {
+			if strings.Contains(line, "address:") {
+				accountAddress = strings.TrimSpace(strings.Split(line, ":")[1])
+				break
+			}
+		}
+
+		if accountAddress == "" {
+			return "", 0, fmt.Errorf("failed to extract account address from command output")
+		}
+
+		// Add tokens to user - 1000000 tokens initially
+		addTokensCmd := exec.Command("swechaind", "tx", "bank", "send",
+			"faucet", accountAddress, "1000000token",
+			"--from", "faucet",
+			"--keyring-backend", "test",
+			"--chain-id", "swechain",
+			"--fees", "200token",
+			"--yes")
+
+		err = addTokensCmd.Run()
+		if err != nil {
+			return "", 0, fmt.Errorf("failed to add tokens: %v", err)
+		}
+
+		logger.Printf("INFO: Created new blockchain account for %s at %s", username, accountAddress)
+	}
+
+	// Get token balance
+	tokenBalance, err := getTokenBalance(accountAddress)
+	if err != nil {
+		logger.Printf("WARNING: Failed to get token balance: %v", err)
+		tokenBalance = 0
+	}
+
+	// Store account address and balance in Redis for faster access later
+	ctx := context.Background()
+	key := fmt.Sprintf("account:%s", username)
+	redisClient.HSet(ctx, key, "address", accountAddress)
+	redisClient.HSet(ctx, key, "balance", tokenBalance)
+
+	return accountAddress, tokenBalance, nil
+}
+
+// Get current token balance for a specific address
+func getTokenBalance(address string) (int, error) {
+	balanceCmd := exec.Command("swechaind", "query", "bank", "balances", address, "--output", "json")
+	balanceOutput, err := balanceCmd.Output()
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to query balance: %v", err)
+	}
+
+	// Parse JSON to get the balance
+	var balanceData struct {
+		Balances []struct {
+			Denom  string `json:"denom"`
+			Amount string `json:"amount"`
+		} `json:"balances"`
+	}
+
+	err = json.Unmarshal(balanceOutput, &balanceData)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse balance data: %v", err)
+	}
+
+	for _, coin := range balanceData.Balances {
+		if coin.Denom == "token" {
+			amount, err := strconv.Atoi(coin.Amount)
+			if err != nil {
+				return 0, fmt.Errorf("failed to parse token amount: %v", err)
+			}
+			return amount, nil
+		}
+	}
+
+	// No tokens found
+	return 0, nil
+}
+
 // HTML handler - check auth inside
 func handleRoot(c echo.Context) error {
 	// Check if user is authenticated
@@ -359,11 +461,45 @@ func handleRoot(c echo.Context) error {
 		return landingTmpl.Execute(c.Response().Writer, nil)
 	}
 
-	// User is authenticated, but we'll use fixed values rather than getting from GitHub API
-	// Create template data with fixed time and username
+	// User is authenticated, get GitHub info
+	githubUser, err := getGitHubUser(cookie.Value)
+	username := "User"
+	if err != nil {
+		logger.Printf("WARNING: Failed to get GitHub user info: %v", err)
+	} else if githubUser != nil {
+		// Use login (username) instead of display name
+		username = githubUser.Login
+	}
+
+	// Get account address and balance from Redis or blockchain
+	accountAddress := ""
+	tokenBalance := 0
+
+	ctx := context.Background()
+	key := fmt.Sprintf("account:%s", username)
+
+	// Try to get from Redis first (faster)
+	accountAddress, err = redisClient.HGet(ctx, key, "address").Result()
+	if err != nil || accountAddress == "" {
+		// If not in Redis, try to set up from blockchain
+		accountAddress, tokenBalance, err = setupBlockchainAccount(username)
+		if err != nil {
+			logger.Printf("WARNING: Failed to get account info: %v", err)
+			accountAddress = "Not available"
+		}
+	} else {
+		// Get balance from Redis
+		balanceStr, err := redisClient.HGet(ctx, key, "balance").Result()
+		if err == nil {
+			tokenBalance, _ = strconv.Atoi(balanceStr)
+		}
+	}
+
+	// Create template data with user info
 	data := TemplateData{
-		CurrentTime: fixedDateTime,
-		Username:    fixedUsername,
+		Username:       username,
+		AccountAddress: accountAddress,
+		TokenBalance:   tokenBalance,
 	}
 
 	// Use the template to render the page
@@ -393,11 +529,12 @@ func handleCallback(c echo.Context) error {
 	githubUser, err := getGitHubUser(token.AccessToken)
 	if err == nil && githubUser != nil {
 		// Try to set up blockchain account with the GitHub username
-		err := setupBlockchainAccount(githubUser.Login)
+		accountAddress, tokenBalance, err := setupBlockchainAccount(githubUser.Login)
 		if err != nil {
 			logger.Printf("WARNING: Failed to setup blockchain account: %v", err)
 		} else {
-			logger.Printf("INFO: Successfully set up blockchain account for %s", githubUser.Login)
+			logger.Printf("INFO: Successfully set up blockchain account for %s with address %s and %d tokens",
+				githubUser.Login, accountAddress, tokenBalance)
 		}
 	}
 
@@ -416,33 +553,6 @@ func handleCallback(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/")
 }
 
-// Setup blockchain account for user
-func setupBlockchainAccount(username string) error {
-	// Check if the user already has keys
-	checkCmd := exec.Command("swechaind", "keys", "show", username)
-	if err := checkCmd.Run(); err == nil {
-		// User already exists, don't create again
-		return nil
-	}
-
-	// Create command to add keys
-	addKeysCmd := exec.Command("swechaind", "keys", "add", username)
-	err := addKeysCmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to add blockchain keys: %v", err)
-	}
-
-	// Add tokens to user
-	addTokensCmd := exec.Command("swechaind", "tx", "bank", "send",
-		"validator", username, "1000token", "--gas-prices", "0.025stake", "-y")
-	err = addTokensCmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to add tokens: %v", err)
-	}
-
-	return nil
-}
-
 func handleLogout(c echo.Context) error {
 	// Clear the auth cookie by setting an expired cookie
 	c.SetCookie(&http.Cookie{
@@ -457,6 +567,108 @@ func handleLogout(c echo.Context) error {
 
 	logger.Printf("INFO: User logged out, redirecting to /")
 	return c.Redirect(http.StatusSeeOther, "/")
+}
+
+// Websocket endpoint for live token updates
+func handleTokenUpdates(c echo.Context) error {
+	// Check auth
+	cookie, err := c.Cookie("github_token")
+	if err != nil || cookie.Value == "" {
+		logger.Printf("ERROR: Token update WebSocket connection attempt without authentication")
+		return c.NoContent(http.StatusUnauthorized)
+	}
+
+	// Get username
+	githubUser, err := getGitHubUser(cookie.Value)
+	username := "User"
+	if err == nil && githubUser != nil {
+		username = githubUser.Login
+	}
+
+	// Upgrade to WebSocket
+	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	if err != nil {
+		logger.Printf("ERROR: Token WebSocket upgrade failed: %v", err)
+		return err
+	}
+	defer ws.Close()
+
+	// Create a safe connection
+	safeConn := &SafeConn{
+		conn: ws,
+	}
+
+	// Get account address
+	ctx := context.Background()
+	key := fmt.Sprintf("account:%s", username)
+	accountAddress, err := redisClient.HGet(ctx, key, "address").Result()
+	if err != nil || accountAddress == "" {
+		// Try to set up again if needed
+		accountAddress, _, err = setupBlockchainAccount(username)
+		if err != nil {
+			logger.Printf("ERROR: Failed to get account address for token updates: %v", err)
+			return nil
+		}
+	}
+
+	// Send initial token balance
+	if err := sendCurrentTokenBalance(safeConn, accountAddress); err != nil {
+		logger.Printf("ERROR: Failed to send initial token balance: %v", err)
+		return nil
+	}
+
+	// Setup periodic updates (every 30 seconds)
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	// Handle client disconnection
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for {
+			_, _, err := ws.ReadMessage()
+			if err != nil {
+				return
+			}
+		}
+	}()
+
+	// Send periodic updates
+	for {
+		select {
+		case <-done:
+			return nil
+		case <-ticker.C:
+			if err := sendCurrentTokenBalance(safeConn, accountAddress); err != nil {
+				logger.Printf("ERROR: Failed to send token update: %v", err)
+				return nil
+			}
+		}
+	}
+}
+
+func sendCurrentTokenBalance(sc *SafeConn, accountAddress string) error {
+	// Get current token balance from blockchain
+	tokenBalance, err := getTokenBalance(accountAddress)
+	if err != nil {
+		return fmt.Errorf("failed to get token balance: %v", err)
+	}
+
+	// Send update to client
+	update := TokenUpdate{
+		TokenBalance: tokenBalance,
+	}
+
+	jsonMsg, err := json.Marshal(update)
+	if err != nil {
+		return fmt.Errorf("failed to marshal token update: %v", err)
+	}
+
+	if err := sc.WriteMessage(websocket.TextMessage, jsonMsg); err != nil {
+		return fmt.Errorf("failed to write token update: %v", err)
+	}
+
+	return nil
 }
 
 func handleUserIssues(c echo.Context) error {
@@ -532,8 +744,15 @@ func handleWebSocket(c echo.Context) error {
 		conn: ws,
 	}
 
-	// Always use the fixed username rather than getting from GitHub
-	username := fixedUsername
+	// Get the GitHub username (login) for the user
+	githubUser, err := getGitHubUser(cookie.Value)
+	var username string
+	if err != nil || githubUser == nil {
+		username = "User"
+		logger.Printf("WARNING: Failed to get GitHub username for WebSocket: %v", err)
+	} else {
+		username = githubUser.Login // Use login (username) instead of display name
+	}
 
 	// Register this connection
 	manager.register <- ws
