@@ -26,7 +26,7 @@ import (
 
 const (
 	ollamaEndpoint = "http://localhost:11434/api/generate"
-	modelName      = "cogito:3b"
+	modelName      = "llama3.2:3b"
 	configFile     = "config.yml"
 	templateFile   = "templates/index.html"
 	landingFile    = "templates/landing.html"
