@@ -27,7 +27,8 @@
             --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.04);
             --scrollbar-bg: #f0f0f0;
             --scrollbar-thumb: #c0c0c0;
-            --accent-color: #58a6ff;
+            /*--accent-color: #58a6ff; */
+            --accent-color: grey;
         }
         
         body {
@@ -153,7 +154,7 @@
         }
         
         .response-sender {
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             color: var(--text-primary);
             display: flex;
             align-items: center;
@@ -178,7 +179,7 @@
         }
         
         .response-text {
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             line-height: 1.7;
             white-space: pre-wrap;
             word-break: break-word;
@@ -209,7 +210,7 @@
             border: 1px solid var(--border-color);
             background-color: var(--bg-color);
             color: var(--text-primary);
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             box-shadow: var(--shadow-subtle);
             font-family: 'Bitstream Vera Sans Mono', monospace;
             resize: none;
@@ -599,7 +600,9 @@
                     Welcome, {{.Username}}
                 </div>
                 <div class="blockchain-info">
-                    Account: {{.AccountAddress}} Tokens: <span id="token-balance" class="token-value">{{.TokenBalance}}</span>
+                    Account: {{.AccountAddress}} 
+                    </br> 
+                    Tokens: <span id="token-balance" class="token-value">{{.TokenBalance}}</span>
                 </div>
             </div>
         </div>
